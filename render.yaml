@@ -1,0 +1,43 @@
+services:
+  # ─── Django Backend ───────────────────────────────────────────────────────────
+  - type: web
+    name: resumeai-backend
+    env: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn resumebuilder.wsgi --log-file -"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "resumeai-backend.onrender.com,localhost"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://resumeai-frontend.onrender.com"
+      - key: GEMINI_API_KEY
+        sync: false   # Set this manually in Render dashboard
+      - key: DATABASE_URL
+        fromDatabase:
+          name: resumeai-db
+          property: connectionString
+
+  # ─── React Frontend (Static Site) ────────────────────────────────────────────
+  - type: web
+    name: resumeai-frontend
+    env: static
+    region: oregon
+    plan: free
+    rootDir: resume-builder
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: "https://resumeai-backend.onrender.com/api"
+
+databases:
+  - name: resumeai-db
+    plan: free
+    region: oregon
