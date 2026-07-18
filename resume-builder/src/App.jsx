@@ -10,7 +10,17 @@ import { Component } from 'react';
 // ── Error Boundary — catches any crash and shows a helpful message ────────────
 class ErrorBoundary extends Component {
   state = { error: null };
-  static getDerivedStateFromError(error) { return { error }; }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  // componentDidCatch is REQUIRED in React 18/19 to prevent re-throwing
+  // errors to the window level (which shows the browser/Render error page)
+  componentDidCatch(error, info) {
+    console.error('[ErrorBoundary]', error, info);
+  }
+
   render() {
     if (this.state.error) {
       return (
@@ -57,8 +67,7 @@ function PublicRoute({ children }) {
   return user ? <Navigate to="/dashboard" replace /> : children;
 }
 
-// ── App ── Uses HashRouter so GitHub Pages works without server config ─────────
-// URLs will look like: https://user.github.io/resume-builder/#/login
+// ── App ── Uses HashRouter so Render static hosting works without server config ─
 export default function App() {
   return (
     <ErrorBoundary>

@@ -9,39 +9,54 @@ export function AuthProvider({ children }) {
 
   // On mount — restore session
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      getMe()
-        .then(({ data }) => setUser(data))
-        .catch(() => {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-        })
-        .finally(() => setLoading(false));
-    } else {
+    let cancelled = false;
+    try {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        getMe()
+          .then(({ data }) => { if (!cancelled) setUser(data); })
+          .catch(() => {
+            try {
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('refresh_token');
+            } catch {}
+          })
+          .finally(() => { if (!cancelled) setLoading(false); });
+      } else {
+        setLoading(false);
+      }
+    } catch {
+      // localStorage not available (e.g. strict-mode browser / sandboxed iframe)
       setLoading(false);
     }
+    return () => { cancelled = true; };
   }, []);
 
   const login = useCallback(async (credentials) => {
     const { data } = await apiLogin(credentials);
-    localStorage.setItem('access_token', data.access);
-    localStorage.setItem('refresh_token', data.refresh);
+    try {
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+    } catch {}
     setUser(data.user);
     return data;
   }, []);
 
   const register = useCallback(async (credentials) => {
     const { data } = await apiRegister(credentials);
-    localStorage.setItem('access_token', data.access);
-    localStorage.setItem('refresh_token', data.refresh);
+    try {
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+    } catch {}
     setUser(data.user);
     return data;
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    try {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+    } catch {}
     setUser(null);
   }, []);
 
