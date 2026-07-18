@@ -6,7 +6,8 @@ services:
     region: oregon
     plan: free
     rootDir: backend
-    buildCommand: "./build.sh"
+    # Use "bash build.sh" to avoid needing execute permissions on build.sh
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
     startCommand: "gunicorn resumebuilder.wsgi --log-file -"
     envVars:
       - key: SECRET_KEY
@@ -28,11 +29,14 @@ services:
   - type: web
     name: resumeai-frontend
     env: static
-    region: oregon
-    plan: free
     rootDir: resume-builder
     buildCommand: "npm install && npm run build"
     staticPublishPath: ./dist
+    # SPA fallback: serve index.html for all routes so HashRouter works correctly
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: "https://resumeai-backend.onrender.com/api"
