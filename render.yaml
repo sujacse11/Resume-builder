@@ -39,7 +39,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: "https://resumeai-backend.onrender.com/api"
+        value: "https://resume-builder-ntd7.onrender.com/api"
 
 databases:
   - name: resumeai-db
