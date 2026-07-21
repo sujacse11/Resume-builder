@@ -1,0 +1,73 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{{ quiz.title }} — SkillBoost LMS{% endblock %}
+{% block meta_description %}Take the quiz: {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div style="max-width:780px; margin:0 auto;">
+
+    <a href="{% url 'course_detail' quiz.course.id %}" class="btn btn-secondary btn-sm" id="btn-back-course" style="margin-bottom:20px;">← Back to Course</a>
+
+    <!-- Quiz Header -->
+    <div class="card" style="margin-bottom:28px; text-align:center;">
+      <div style="font-size:2.5rem; margin-bottom:12px;">🧠</div>
+      <h1 class="page-title" style="font-size:1.8rem;">{{ quiz.title }}</h1>
+      <p class="page-subtitle">{{ quiz.course.title }} — {{ questions.count }} Questions</p>
+      <div style="margin-top:16px;">
+        <span class="badge badge-purple">📊 Pass Score: 80%</span>
+        <span class="badge badge-blue" style="margin-left:8px;">⏱️ No time limit</span>
+      </div>
+    </div>
+
+    <!-- Quiz Form -->
+    <form method="post" action="{% url 'quiz_submit' quiz.id %}" id="quiz-form">
+      {% csrf_token %}
+
+      {% for question in questions %}
+      <div class="question-card animate-fade-up" id="question-{{ question.id }}">
+        <div class="question-number">Question {{ forloop.counter }} of {{ questions.count }}</div>
+        <div class="question-text">{{ question.question_text }}</div>
+        <div class="answers-grid">
+          {% for answer in question.answers.all %}
+          <div class="answer-option">
+            <input
+              type="radio"
+              name="question_{{ question.id }}"
+              id="answer-{{ answer.id }}"
+              value="{{ answer.id }}"
+            />
+            <label class="answer-label" for="answer-{{ answer.id }}">
+              <div class="answer-radio-dot"></div>
+              {{ answer.answer_text }}
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+      <div style="text-align:center; margin-top:32px;">
+        <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-quiz">
+          ✅ Submit Quiz
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Prevent double-submit
+  const quizForm = document.getElementById('quiz-form');
+  if (quizForm) {
+    quizForm.addEventListener('submit', function() {
+      const btn = document.getElementById('btn-submit-quiz');
+      btn.disabled = true;
+      btn.textContent = '⏳ Submitting...';
+    });
+  }
+</script>
+{% endblock %}

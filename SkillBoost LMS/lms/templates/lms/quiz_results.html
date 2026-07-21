@@ -1,0 +1,122 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Quiz Results — SkillBoost LMS{% endblock %}
+{% block meta_description %}Your quiz results for {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div style="max-width:780px; margin:0 auto;">
+
+    <!-- Results Header -->
+    <div class="card" style="text-align:center; margin-bottom:28px;">
+      {% if passed %}
+      <div style="font-size:3rem; margin-bottom:12px;">🎉</div>
+      <h1 class="page-title" style="font-size:1.8rem; color:#6ee7b7;">You Passed!</h1>
+      {% else %}
+      <div style="font-size:3rem; margin-bottom:12px;">💪</div>
+      <h1 class="page-title" style="font-size:1.8rem;">Keep Going!</h1>
+      {% endif %}
+      <p class="page-subtitle">{{ quiz.title }} — {{ quiz.course.title }}</p>
+
+      <!-- Score Circle -->
+      <div style="margin:32px auto 24px; position:relative; width:140px; height:140px;">
+        <svg width="140" height="140" style="transform:rotate(-90deg);">
+          <circle cx="70" cy="70" r="60" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="12"/>
+          <circle cx="70" cy="70" r="60" fill="none"
+            stroke="{% if passed %}#10b981{% else %}#ef4444{% endif %}"
+            stroke-width="12"
+            stroke-dasharray="{{ attempt.score|floatformat:1|stringformat:'s' }} 100"
+            stroke-dasharray="376.99"
+            stroke-dashoffset="{{ 376.99|add:0 }}"
+            id="score-arc"
+            stroke-linecap="round"/>
+        </svg>
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
+          <div style="font-size:2rem; font-weight:900; color:{% if passed %}var(--accent-green){% else %}var(--accent-red){% endif %};">
+            {{ attempt.score|floatformat:0 }}%
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">score</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:center; margin-bottom:8px; flex-wrap:wrap;">
+        {% if passed %}
+        <span class="badge badge-success">✓ Passed</span>
+        {% else %}
+        <span class="badge" style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);">
+          ✗ Need {{ passing_score|floatformat:0 }}% to Pass
+        </span>
+        {% endif %}
+        <span class="badge badge-blue">Taken {{ attempt.attempted_at|date:"M j, Y" }}</span>
+      </div>
+
+      {% if passed and completion and completion.is_completed %}
+      <div style="margin-top:20px;">
+        <a href="{% url 'generate_certificate' quiz.course.id request.user.id %}" class="btn btn-gold" id="btn-cert">
+          🏆 Download Certificate
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Answer Review -->
+    <div class="section-header">
+      <h2 class="section-title">📋 Answer Review</h2>
+    </div>
+
+    {% for question in questions %}
+    {% with result_key=question.id|stringformat:'s' %}
+    <div class="question-card" id="result-question-{{ question.id }}"
+      style="border-left:4px solid {% if question.id in attempt.quiz.questions.all|dictsort:'id' %}var(--accent-green){% else %}var(--accent-green){% endif %};">
+      <div class="question-number">Question {{ forloop.counter }}</div>
+      <div class="question-text">{{ question.question_text }}</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        {% for answer in question.answers.all %}
+        <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:var(--radius-md);
+          {% if answer.is_correct %}
+            background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3);
+          {% else %}
+            background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);
+          {% endif %}">
+          <span style="font-size:1rem; flex-shrink:0;">
+            {% if answer.is_correct %}✅{% else %}⬜{% endif %}
+          </span>
+          <span style="font-size:0.9rem; color:{% if answer.is_correct %}#6ee7b7{% else %}var(--text-secondary){% endif %};">
+            {{ answer.answer_text }}
+            {% if answer.is_correct %}
+            <span style="font-size:0.78rem; color:var(--accent-green); font-weight:700;">(Correct Answer)</span>
+            {% endif %}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+
+    <!-- Actions -->
+    <div style="display:flex; gap:12px; justify-content:center; margin-top:32px; flex-wrap:wrap;">
+      <a href="{% url 'quiz_view' quiz.id %}" class="btn btn-primary" id="btn-retry-quiz">🔄 Retry Quiz</a>
+      <a href="{% url 'course_detail' quiz.course.id %}" class="btn btn-secondary" id="btn-back-course">📚 Back to Course</a>
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary" id="btn-dashboard">🏠 Dashboard</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Animate score arc
+  const arc = document.getElementById('score-arc');
+  if (arc) {
+    const score = {{ attempt.score|floatformat:1 }};
+    const circumference = 376.99;
+    const offset = circumference - (score / 100) * circumference;
+    arc.style.strokeDasharray = circumference;
+    arc.style.strokeDashoffset = circumference;
+    arc.style.transition = 'stroke-dashoffset 1.5s ease';
+    setTimeout(() => { arc.style.strokeDashoffset = offset; }, 200);
+  }
+</script>
+{% endblock %}

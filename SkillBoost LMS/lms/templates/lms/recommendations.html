@@ -1,0 +1,76 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Recommendations — SkillBoost LMS{% endblock %}
+{% block meta_description %}AI-powered course recommendations personalized for you{% endblock %}
+
+{% block content %}
+<div class="page-content">
+
+  <div class="page-header">
+    <h1 class="page-title">✨ Recommended For You</h1>
+    <p class="page-subtitle">AI-powered suggestions based on your learning journey</p>
+  </div>
+
+  {% if error_message %}
+  <div class="card" style="text-align:center; padding:40px; border-color:rgba(239,68,68,0.3);">
+    <div style="font-size:2rem; margin-bottom:12px;">⚠️</div>
+    <div style="color:var(--accent-red); font-weight:600; margin-bottom:8px;">Unable to Load Recommendations</div>
+    <p style="color:var(--text-secondary); font-size:0.9rem;">{{ error_message }}</p>
+    <p style="color:var(--text-muted); font-size:0.82rem; margin-top:8px;">
+      Make sure your Gemini API key is set in the <code style="background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">.env</code> file.
+    </p>
+  </div>
+
+  {% elif recommendations %}
+
+  <!-- Completed Courses Context -->
+  {% if completed_courses %}
+  <div class="card" style="margin-bottom:28px; background:rgba(16,185,129,0.05); border-color:rgba(16,185,129,0.2);">
+    <div style="font-size:0.85rem; color:var(--text-secondary);">
+      <strong style="color:#6ee7b7;">🎓 Based on your completed courses:</strong>
+      {% for c in completed_courses %}
+        <span class="badge badge-success" style="margin-left:6px;">{{ c.course.title }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="grid-3">
+    {% for rec in recommendations %}
+    <div class="rec-card" id="rec-card-{{ forloop.counter }}">
+      <div class="rec-score">{{ rec.relevance_score }}% Match</div>
+      <div style="font-size:1.5rem; margin-bottom:12px;">🎯</div>
+      <h3 style="font-size:1rem; font-weight:700; color:var(--text-primary); margin-bottom:10px; padding-right:70px;">
+        {{ rec.title }}
+      </h3>
+      <p style="font-size:0.875rem; color:var(--text-secondary); line-height:1.6; margin-bottom:16px;">
+        {{ rec.description }}
+      </p>
+
+      {% if rec.existing_course %}
+      <a href="{% url 'course_detail' rec.existing_course.id %}" class="btn btn-primary btn-sm" id="btn-go-course-{{ forloop.counter }}">
+        📚 View in SkillBoost
+      </a>
+      {% else %}
+      <div style="display:flex; gap:8px;">
+        <a href="https://www.google.com/search?q={{ rec.title|urlencode }}+course" target="_blank" rel="noopener"
+          class="btn btn-secondary btn-sm" id="btn-search-{{ forloop.counter }}">
+          🔍 Find Online
+        </a>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🤖</div>
+    <div class="empty-title">Generating Recommendations...</div>
+    <p style="margin-bottom:20px;">Complete some courses and quizzes to get personalized suggestions.</p>
+    <a href="{% url 'dashboard' %}" class="btn btn-primary" id="btn-go-courses">Browse Courses</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

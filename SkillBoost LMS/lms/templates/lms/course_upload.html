@@ -1,0 +1,46 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Create Course — SkillBoost LMS{% endblock %}
+{% block meta_description %}Create a new course on SkillBoost LMS{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="form-container">
+    <div class="page-header">
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm" id="btn-back-dashboard" style="margin-bottom:16px;">← Back</a>
+      <h1 class="page-title">Create a New Course 📚</h1>
+      <p class="page-subtitle">Build your course and add video lessons to get started.</p>
+    </div>
+
+    <div class="form-card">
+      <form method="post" id="course-upload-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.title.id_for_label }}">Course Title</label>
+          {{ form.title }}
+          {% if form.title.errors %}
+            <p style="color:var(--accent-red); font-size:0.85rem; margin-top:6px;">{{ form.title.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.description.id_for_label }}">Course Description</label>
+          {{ form.description }}
+          <p style="color:var(--text-muted); font-size:0.8rem; margin-top:6px;">
+            💡 A detailed description helps the AI generate better quizzes for your lessons.
+          </p>
+          {% if form.description.errors %}
+            <p style="color:var(--accent-red); font-size:0.85rem; margin-top:6px;">{{ form.description.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:8px;">
+          <button type="submit" class="btn btn-primary" id="btn-save-course">✅ Create Course</button>
+          <a href="{% url 'dashboard' %}" class="btn btn-secondary" id="btn-cancel-course">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

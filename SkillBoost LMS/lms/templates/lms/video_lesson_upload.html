@@ -1,0 +1,59 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Add Lesson — {{ course.title }} — SkillBoost LMS{% endblock %}
+{% block meta_description %}Upload a new video lesson to {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="form-container">
+    <div class="page-header">
+      <a href="{% url 'course_detail' course.id %}" class="btn btn-secondary btn-sm" id="btn-back-course" style="margin-bottom:16px;">← Back to Course</a>
+      <h1 class="page-title">Add Video Lesson 🎬</h1>
+      <p class="page-subtitle">
+        Adding lesson to: <strong style="color:var(--accent-purple-light);">{{ course.title }}</strong>
+      </p>
+    </div>
+
+    <div class="form-card">
+      <form method="post" id="lesson-upload-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.title.id_for_label }}">Lesson Title</label>
+          {{ form.title }}
+          {% if form.title.errors %}
+            <p style="color:var(--accent-red); font-size:0.85rem; margin-top:6px;">{{ form.title.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.video_url.id_for_label }}">Video URL</label>
+          {{ form.video_url }}
+          <p style="color:var(--text-muted); font-size:0.8rem; margin-top:6px;">
+            🔗 YouTube, Vimeo, or any other video URL
+          </p>
+          {% if form.video_url.errors %}
+            <p style="color:var(--accent-red); font-size:0.85rem; margin-top:6px;">{{ form.video_url.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.description.id_for_label }}">Lesson Description</label>
+          {{ form.description }}
+          <p style="color:var(--text-muted); font-size:0.8rem; margin-top:6px;">
+            🧠 The AI uses this description to generate quiz questions — be detailed and specific!
+          </p>
+          {% if form.description.errors %}
+            <p style="color:var(--accent-red); font-size:0.85rem; margin-top:6px;">{{ form.description.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:8px;">
+          <button type="submit" class="btn btn-primary" id="btn-save-lesson">✅ Upload Lesson</button>
+          <a href="{% url 'course_detail' course.id %}" class="btn btn-secondary" id="btn-cancel-lesson">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

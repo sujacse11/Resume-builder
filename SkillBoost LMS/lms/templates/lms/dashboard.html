@@ -1,0 +1,95 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Dashboard — SkillBoost LMS{% endblock %}
+{% block meta_description %}Your SkillBoost LMS dashboard. Browse and manage courses.{% endblock %}
+
+{% block content %}
+<div class="page-content">
+
+  <!-- Hero -->
+  <div class="hero" style="padding-top:20px;">
+    <h1 class="hero-title">Welcome back, {{ user.username }} 👋</h1>
+    <p class="hero-subtitle">Continue learning, explore new courses, or create content for others.</p>
+    <div class="hero-actions">
+      <a href="{% url 'course_upload' %}" class="btn btn-primary btn-lg" id="btn-create-course">➕ Create Course</a>
+      <a href="{% url 'recommend_courses' %}" class="btn btn-secondary btn-lg" id="btn-recommendations">✨ Get Recommendations</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon purple">📚</div>
+      <div>
+        <div class="stat-value">{{ courses.count }}</div>
+        <div class="stat-label">Total Courses</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">🎓</div>
+      <div>
+        <div class="stat-value">{{ completions|length }}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue">🧠</div>
+      <div>
+        <div class="stat-value">{{ user.quiz_attempts.count }}</div>
+        <div class="stat-label">Quizzes Taken</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon gold">🏆</div>
+      <div>
+        {% with passed=completions|length %}
+        <div class="stat-value">{{ passed }}</div>
+        {% endwith %}
+        <div class="stat-label">Certificates Earned</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Courses Grid -->
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">All Courses</h2>
+      <div class="section-subtitle">Click a course to view details and start learning</div>
+    </div>
+    <a href="{% url 'course_upload' %}" class="btn btn-primary btn-sm" id="btn-add-course-header">➕ Add Course</a>
+  </div>
+
+  {% if courses %}
+  <div class="grid-3">
+    {% for course in courses %}
+    <a href="{% url 'course_detail' course.id %}" style="text-decoration:none;" id="course-card-{{ course.id }}">
+      <div class="course-card">
+        <div class="course-card-icon">📖</div>
+        <div class="course-card-title">{{ course.title }}</div>
+        <div class="course-card-desc">{{ course.description }}</div>
+        <div class="course-card-footer">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <span class="badge badge-purple">{{ course.lessons.count }} lessons</span>
+            <span class="badge badge-blue">{{ course.quizzes.count }} quizzes</span>
+          </div>
+          {% if completions and completions|dictsort:"course_id" %}
+            {% if course.id in completions and completions|length > 0 %}
+            <span class="badge badge-success">✓ Completed</span>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📚</div>
+    <div class="empty-title">No courses yet</div>
+    <p style="margin-bottom:20px;">Get started by creating your first course!</p>
+    <a href="{% url 'course_upload' %}" class="btn btn-primary" id="btn-first-course">Create Your First Course</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
